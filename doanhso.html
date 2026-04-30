@@ -41,29 +41,35 @@
             fetch(`https://cuonghuong-api.onrender.com/api/doanhso?keyword=${keyword}`)
                 .then(res => res.json())
                 .then(data => {
-                    let html = "<table class='table table-bordered table-striped'>";
+                    let html = `
+    <table style="width:100%; border-collapse:collapse; font-size:14px;">
+        <thead>
+            <tr style="background:#e9ecef;">
+                <th style="border:1px solid #ccc; padding:8px;">Tên nhân viên</th>
+                <th style="border:1px solid #ccc; padding:8px;">Số đơn bán</th>
+                <th style="border:1px solid #ccc; padding:8px;">Đơn trả lại</th>
+                <th style="border:1px solid #ccc; padding:8px;">Tổng tiền</th>
+            </tr>
+        </thead>
+        <tbody>
+`;
 
-                    if (data.length > 0) {
-                        html += "<thead><tr>";
-
-                        for (let key in data[0]) {
-                            html += `<th>${key}</th>`;
-                        }
-
-                        html += "</tr></thead><tbody>";
-
-                        data.forEach(row => {
-                            html += "<tr>";
-                            for (let key in row) {
-                                html += `<td>${row[key]}</td>`;
-                            }
-                            html += "</tr>";
-                        });
-
-                        html += "</tbody>";
-                    } else {
-                        html += "<tr><td>Không có dữ liệu</td></tr>";
-                    }
+data.forEach(row => {
+    html += `
+        <tr>
+            <td style="border:1px solid #ddd; padding:6px;">${row["Tennv"] ?? ""}</td>
+            <td style="border:1px solid #ddd; padding:6px; text-align:center;">
+                ${row["SoDonBan"] ?? 0}
+            </td>
+            <td style="border:1px solid #ddd; padding:6px; text-align:center;">
+                ${row["SoDonTraLai"] ?? 0}
+            </td>
+            <td style="border:1px solid #ddd; padding:6px; text-align:right;">
+                ${Number(row["TongTien"] ?? 0).toLocaleString('vi-VN')}
+            </td>
+        </tr>
+    `;
+});
 
                     html += "</table>";
                     document.getElementById("data").innerHTML = html;
