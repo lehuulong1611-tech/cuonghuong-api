@@ -64,14 +64,54 @@ app.get("/api/tonkho", async (req, res) => {
 // API Doanh số
 app.get("/api/doanhso", async (req, res) => {
     try {
-        await sql.connect(config);
-        const result = await sql.query("SELECT TOP 10 * FROM vw_Doanhso");
+        const type = req.query.type || "day"; // day | month
+
+        const pool = await sql.connect(config);
+
+        let dateCondition = "";
+
+        if (type === "month") {
+            dateCondition = `
+                MONTH(NgayCT) = MONTH(GETDATE())
+                AND YEAR(NgayCT) = YEAR(GETDATE())
+            `;
+        } else {
+            dateCondition = `
+                CAST(NgayCT AS DATE) = CAST(GETDATE() AS DATE)
+            `;
+        }
+
+        const result = await pool.request()
+            .query(`
+                SELECT
+                    Tennv,
+                    SUM(
+                        CASE 
+                            WHEN LoaiCT IN ('HDBB', 'HDBL') THEN 1
+                            WHEN LoaiCT = 'HHTL' THEN -1
+                            ELSE 0
+                        END
+                    ) AS SoLuongDon,
+
+                    SUM(
+                        CASE
+                            WHEN LoaiCT IN ('HDBB', 'HDBL') THEN ThanhTien
+                            WHEN LoaiCT = 'HHTL' THEN -ThanhTien
+                            ELSE 0
+                        END
+                    ) AS TongTien
+                FROM vw_doanhso
+                WHERE ${dateCondition}
+                GROUP BY Tennv
+                ORDER BY TongTien DESC
+            `);
+
         res.json(result.recordset);
+
     } catch (err) {
         res.status(500).send(err.message);
     }
-}
-);
+});
 
 const PORT = process.env.PORT || 3000;
 
