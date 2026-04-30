@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý cửa hàng</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h2>Quản lý dữ liệu</h2>
+
+    <button onclick="loadData('tonkho')">Kiểm tra tồn kho</button>
+    <button onclick="loadData('doanhso')">Kiểm tra doanh số</button>
+
+    <div id="data"></div>
+
+    <script>
+        function loadData(type) {
+            fetch(`http://localhost:3000/api/${type}`)
+                .then(response => response.json())
+                .then(data => {
+                    let html = "<table>";
+
+                    if (data.length > 0) {
+                        html += "<tr>";
+                        for (let key in data[0]) {
+                            html += `<th>${key}</th>`;
+                        }
+                        html += "</tr>";
+
+                        data.forEach(row => {
+                            html += "<tr>";
+                            for (let key in row) {
+                                html += `<td>${row[key]}</td>`;
+                            }
+                            html += "</tr>";
+                        });
+                    } else {
+                        html = "Không có dữ liệu";
+                    }
+
+                    html += "</table>";
+                    document.getElementById("data").innerHTML = html;
+                })
+                .catch(error => {
+                    document.getElementById("data").innerHTML = "Lỗi tải dữ liệu";
+                });
+        }
+    </script>
+</body>
+</html>
