@@ -23,10 +23,18 @@
     </a>
 </div>
     <h3 class="mb-3">Kiểm tra doanh số</h3>
+<div style="margin-bottom:15px;">
+    <button onclick="loadData('day')"
+            style="padding:8px 12px; margin-right:10px; border:1px solid #ccc; border-radius:6px;">
+        Ngày hiện tại
+    </button>
 
-    <div class="mb-3">
-        <input type="text" id="search" class="form-control" placeholder="Nhập mã hàng / tên hàng">
-    </div>
+    <button onclick="loadData('month')"
+            style="padding:8px 12px; border:1px solid #ccc; border-radius:6px;">
+        Tháng hiện tại
+    </button>
+</div>
+    
 
     <button class="btn btn-success mb-3 w-100" onclick="loadData()">
         Tìm kiếm
@@ -80,7 +88,7 @@ data.forEach(row => {
                 });
         }
 
-        loadData();
+        loadData('day');
     </script>
 
 </body>
