@@ -16,59 +16,60 @@
     <div id="data"></div>
 
     <script>
-        function loadData() {
-            let keyword = document.getElementById("search").value;
+    let currentPage = 1;
 
-            fetch(`https://cuonghuong-api.onrender.com/api/tonkho?keyword=${keyword}`)
-                .then(res => res.json())
-                .then(data => {
-                    let html = `
-                        <table style="
-                            width:100%;
-                            border-collapse:collapse;
-                            font-size:14px;
-                        ">
-                            <thead>
-                                <tr style="background:#e9ecef;">
-                                    <th style="border:1px solid #ccc; padding:8px;">Tên hàng</th>
-                                    <th style="border:1px solid #ccc; padding:8px;">ĐVT</th>
-                                    <th style="border:1px solid #ccc; padding:8px;">Giá sỉ</th>
-                                    <th style="border:1px solid #ccc; padding:8px;">SL tồn</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                    `;
+    function loadData(page = 1) {
+        currentPage = page;
+        let keyword = document.getElementById("search").value;
 
-                    data.forEach(row => {
-                        html += `
-                            <tr>
-                                <td style="border:1px solid #ddd; padding:6px;">${row.Ten || ""}</td>
-                                <td style="border:1px solid #ddd; padding:6px;">${row.DVT || ""}</td>
-                                <td style="border:1px solid #ddd; padding:6px; text-align:right;">
-                                    ${Number(row.Giasi || 0).toLocaleString('vi-VN')}
-                                </td>
-                                <td style="border:1px solid #ddd; padding:6px; text-align:center;">
-                                    ${row.SoLuongConLai || 0}
-                                </td>
+        fetch(`https://cuonghuong-api.onrender.com/api/tonkho?keyword=${keyword}&page=${page}`)
+            .then(res => res.json())
+            .then(data => {
+                let html = `
+                    <table style="width:100%; border-collapse:collapse; font-size:14px;">
+                        <thead>
+                            <tr style="background:#e9ecef;">
+                                <th style="border:1px solid #ccc; padding:8px;">Tên hàng</th>
+                                <th style="border:1px solid #ccc; padding:8px;">ĐVT</th>
+                                <th style="border:1px solid #ccc; padding:8px;">Giá sỉ</th>
+                                <th style="border:1px solid #ccc; padding:8px;">SL tồn</th>
                             </tr>
-                        `;
-                    });
+                        </thead>
+                        <tbody>
+                `;
 
+                data.forEach(row => {
                     html += `
-                            </tbody>
-                        </table>
+                        <tr>
+                            <td style="border:1px solid #ddd; padding:6px;">${row["Ten"] ?? ""}</td>
+                            <td style="border:1px solid #ddd; padding:6px;">${row["DVT"] ?? ""}</td>
+                            <td style="border:1px solid #ddd; padding:6px; text-align:right;">
+                                ${Number(row["Giasi"] ?? 0).toLocaleString('vi-VN')}
+                            </td>
+                            <td style="border:1px solid #ddd; padding:6px; text-align:center;">
+                                ${row["SoLuongConLai"] ?? ""}
+                            </td>
+                        </tr>
                     `;
-
-                    document.getElementById("data").innerHTML = html;
-                })
-                .catch(() => {
-                    document.getElementById("data").innerHTML =
-                        "<div style='color:red;'>Lỗi tải dữ liệu</div>";
                 });
-        }
 
-        loadData();
-    </script>
+                html += `
+                        </tbody>
+                    </table>
+
+                    <div style="margin-top:10px; text-align:center;">
+                        <button onclick="loadData(currentPage-1)" ${currentPage==1 ? "disabled" : ""}>← Trước</button>
+                        <span style="margin:0 10px;">Trang ${currentPage}</span>
+                        <button onclick="loadData(currentPage+1)">Sau →</button>
+                    </div>
+                `;
+
+                document.getElementById("data").innerHTML = html;
+            });
+    }
+
+    loadData();
+</script>
 
 </body>
 </html>
