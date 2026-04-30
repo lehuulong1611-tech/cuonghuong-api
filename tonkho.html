@@ -8,10 +8,10 @@
 </head>
 <body class="container mt-3">
 
-    <h3>Tồn kho</h3>
+    <h3 class="mb-3">Kiểm tra tồn kho</h3>
 
     <input type="text" id="search" class="form-control mb-3" placeholder="Nhập tên hàng">
-    <button class="btn btn-primary mb-3" onclick="loadData()">Tìm kiếm</button>
+    <button class="btn btn-primary mb-3 w-100" onclick="loadData()">Tìm kiếm</button>
 
     <div id="data"></div>
 
@@ -22,26 +22,48 @@
             fetch(`https://cuonghuong-api.onrender.com/api/tonkho?keyword=${keyword}`)
                 .then(res => res.json())
                 .then(data => {
-                    let html = "<table class='table table-bordered'>";
+                    let html = `
+                        <table style="
+                            width:100%;
+                            border-collapse:collapse;
+                            font-size:14px;
+                        ">
+                            <thead>
+                                <tr style="background:#e9ecef;">
+                                    <th style="border:1px solid #ccc; padding:8px;">Tên hàng</th>
+                                    <th style="border:1px solid #ccc; padding:8px;">ĐVT</th>
+                                    <th style="border:1px solid #ccc; padding:8px;">Giá sỉ</th>
+                                    <th style="border:1px solid #ccc; padding:8px;">SL tồn</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
 
-                    if (data.length > 0) {
-                        html += "<tr>";
-                        for (let key in data[0]) {
-                            html += `<th>${key}</th>`;
-                        }
-                        html += "</tr>";
+                    data.forEach(row => {
+                        html += `
+                            <tr>
+                                <td style="border:1px solid #ddd; padding:6px;">${row.Ten || ""}</td>
+                                <td style="border:1px solid #ddd; padding:6px;">${row.DVT || ""}</td>
+                                <td style="border:1px solid #ddd; padding:6px; text-align:right;">
+                                    ${Number(row.Giasi || 0).toLocaleString('vi-VN')}
+                                </td>
+                                <td style="border:1px solid #ddd; padding:6px; text-align:center;">
+                                    ${row.SoluongConlai || 0}
+                                </td>
+                            </tr>
+                        `;
+                    });
 
-                        data.forEach(row => {
-                            html += "<tr>";
-                            for (let key in row) {
-                                html += `<td>${row[key]}</td>`;
-                            }
-                            html += "</tr>";
-                        });
-                    }
+                    html += `
+                            </tbody>
+                        </table>
+                    `;
 
-                    html += "</table>";
                     document.getElementById("data").innerHTML = html;
+                })
+                .catch(() => {
+                    document.getElementById("data").innerHTML =
+                        "<div style='color:red;'>Lỗi tải dữ liệu</div>";
                 });
         }
 
