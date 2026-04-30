@@ -3,69 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý cửa hàng</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            margin-right: 10px;
-            margin-bottom: 20px;
-            cursor: pointer;
-        }
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: left;
-        }
-    </style>
+    <title>Cường Hường</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    <h2>Quản lý dữ liệu</h2>
+<body class="container text-center mt-5">
 
-    <button onclick="loadData('tonkho')">Kiểm tra tồn kho</button>
-    <button onclick="loadData('doanhso')">Kiểm tra doanh số</button>
+    <h2 class="mb-4">Quản lý cửa hàng</h2>
 
-    <div id="data"></div>
+    <a href="tonkho.html" class="btn btn-primary w-100 mb-3">Kiểm tra tồn kho</a>
+    <a href="doanhso.html" class="btn btn-success w-100">Kiểm tra doanh số</a>
 
-    <script>
-        function loadData(type) {
-            fetch(`http://localhost:3000/api/${type}`)
-                .then(response => response.json())
-                .then(data => {
-                    let html = "<table>";
-
-                    if (data.length > 0) {
-                        html += "<tr>";
-                        for (let key in data[0]) {
-                            html += `<th>${key}</th>`;
-                        }
-                        html += "</tr>";
-
-                        data.forEach(row => {
-                            html += "<tr>";
-                            for (let key in row) {
-                                html += `<td>${row[key]}</td>`;
-                            }
-                            html += "</tr>";
-                        });
-                    } else {
-                        html = "Không có dữ liệu";
-                    }
-
-                    html += "</table>";
-                    document.getElementById("data").innerHTML = html;
-                })
-                .catch(error => {
-                    document.getElementById("data").innerHTML = "Lỗi tải dữ liệu";
-                });
-        }
-    </script>
 </body>
 </html>
