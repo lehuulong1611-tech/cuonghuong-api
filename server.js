@@ -64,7 +64,7 @@ app.get("/api/tonkho", async (req, res) => {
 // API Doanh số
 app.get("/api/doanhso", async (req, res) => {
     try {
-        const type = req.query.type || "day"; // day | month
+        const type = req.query.type || "day";
 
         const pool = await sql.connect(config);
 
@@ -72,12 +72,12 @@ app.get("/api/doanhso", async (req, res) => {
 
         if (type === "month") {
             dateCondition = `
-                MONTH(NgayCT) = MONTH(GETDATE())
-                AND YEAR(NgayCT) = YEAR(GETDATE())
+                MONTH(Ngay) = MONTH(GETDATE())
+                AND YEAR(Ngay) = YEAR(GETDATE())
             `;
         } else {
             dateCondition = `
-                CAST(NgayCT AS DATE) = CAST(GETDATE() AS DATE)
+                CAST(Ngay AS DATE) = CAST(GETDATE() AS DATE)
             `;
         }
 
@@ -85,21 +85,23 @@ app.get("/api/doanhso", async (req, res) => {
             .query(`
                 SELECT
                     Tennv,
-                    SUM(
-                        CASE 
-                            WHEN LoaiCT IN ('HDBB', 'HDBL') THEN 1
-                            WHEN LoaiCT = 'HHTL' THEN -1
-                            ELSE 0
-                        END
-                    ) AS SoLuongDon,
 
-                    SUM(
-                        CASE
-                            WHEN LoaiCT IN ('HDBB', 'HDBL') THEN ThanhTien
-                            WHEN LoaiCT = 'HHTL' THEN -ThanhTien
-                            ELSE 0
-                        END
-                    ) AS TongTien
+                    COUNT(DISTINCT CASE
+                        WHEN LoaiCT IN ('HDBB', 'HDBL')
+                        THEN Chung_Tu
+                    END) AS SoDonBan,
+
+                    COUNT(DISTINCT CASE
+                        WHEN LoaiCT = 'HHTL'
+                        THEN Chung_Tu
+                    END) AS SoDonTraLai,
+
+                    SUM(CASE
+                        WHEN LoaiCT IN ('HDBB', 'HDBL') THEN ThanhTien
+                        WHEN LoaiCT = 'HHTL' THEN -ThanhTien
+                        ELSE 0
+                    END) AS TongTien
+
                 FROM vw_doanhso
                 WHERE ${dateCondition}
                 GROUP BY Tennv
