@@ -41,7 +41,7 @@ app.get("/api/tonkho", async (req, res) => {
                         DVT,
                         Giasi,
                         SoLuongConLai
-                    FROM TonKho
+                    FROM vw_tonkho
                     WHERE Ten LIKE @keyword
                 )
                 SELECT
