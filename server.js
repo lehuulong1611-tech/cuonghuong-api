@@ -25,23 +25,33 @@ app.get("/api/tonkho", async (req, res) => {
         const keyword = req.query.keyword || "";
         const page = parseInt(req.query.page) || 1;
         const pageSize = 10;
-        const offset = (page - 1) * pageSize;
+
+        const startRow = (page - 1) * pageSize + 1;
+        const endRow = page * pageSize;
 
         const pool = await sql.connect(config);
 
         const result = await pool.request()
             .input("keyword", sql.NVarChar, `%${keyword}%`)
             .query(`
+                WITH DataCTE AS (
+                    SELECT
+                        ROW_NUMBER() OVER (ORDER BY Ten) AS RowNum,
+                        Ten,
+                        DVT,
+                        Giasi,
+                        SoLuongConLai
+                    FROM TonKho
+                    WHERE Ten LIKE @keyword
+                )
                 SELECT
                     Ten,
                     DVT,
                     Giasi,
                     SoLuongConLai
-                FROM TonKho
-                WHERE Ten LIKE @keyword
-                ORDER BY Ten
-                OFFSET ${offset} ROWS
-                FETCH NEXT ${pageSize} ROWS ONLY
+                FROM DataCTE
+                WHERE RowNum BETWEEN ${startRow} AND ${endRow}
+                ORDER BY RowNum
             `);
 
         res.json(result.recordset);
