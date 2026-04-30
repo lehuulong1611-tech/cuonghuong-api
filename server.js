@@ -22,13 +22,35 @@ const config = {
 // API tồn kho
 app.get("/api/tonkho", async (req, res) => {
     try {
-        await sql.connect(config);
-        const result = await sql.query("SELECT TOP 10 * FROM vw_tonkho");
+        const keyword = req.query.keyword || "";
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = 10;
+        const offset = (page - 1) * pageSize;
+
+        const pool = await sql.connect(config);
+
+        const result = await pool.request()
+            .input("keyword", sql.NVarChar, `%${keyword}%`)
+            .query(`
+                SELECT
+                    Ten,
+                    DVT,
+                    Giasi,
+                    SoLuongConLai
+                FROM TonKho
+                WHERE Ten LIKE @keyword
+                ORDER BY Ten
+                OFFSET ${offset} ROWS
+                FETCH NEXT ${pageSize} ROWS ONLY
+            `);
+
         res.json(result.recordset);
+
     } catch (err) {
         res.status(500).send(err.message);
     }
-})
+});
+
 // API Doanh số
 app.get("/api/doanhso", async (req, res) => {
     try {
