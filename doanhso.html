@@ -139,14 +139,14 @@ function loadKhach(nv, page = 1) {
             // PAGING
             html += `
             <div style="margin-top:10px; text-align:center;">
-                <button onclick="loadKhach('${currentNhanVien}', ${currentPage-1})"
+                <button onclick='loadKhach(${JSON.stringify(currentNhanVien)}, ${currentPage-1})'
                     ${currentPage==1 ? "disabled" : ""}>
                     ← Trước
                 </button>
 
                 <span style="margin:0 10px;">Trang ${currentPage}</span>
 
-                <button onclick="loadKhach('${currentNhanVien}', ${currentPage+1})"
+                <button onclick='loadKhach(${JSON.stringify(currentNhanVien)}, ${currentPage+1})'
                     ${data.length < 15 ? "disabled" : ""}>
                     Sau →
                 </button>
@@ -167,7 +167,7 @@ function loadHang(kh, page = 1) {
         .then(data => {
 
             let html = `
-            <button onclick="loadKhach('${currentNhanVien}',1)"
+            <button onclick='loadKhach(${JSON.stringify(currentNhanVien)},1)'
                 style="margin-bottom:10px; padding:8px 12px; border:1px solid #ccc; border-radius:6px; background:#f1f1f1;">
                 ← Quay lại
             </button>
@@ -202,14 +202,14 @@ function loadHang(kh, page = 1) {
             // PAGING
             html += `
             <div style="margin-top:10px; text-align:center;">
-                <button onclick="loadHang('${currentKhach}', ${currentPage-1})"
+                <button onclick='loadHang(${JSON.stringify(currentKhach)}, ${currentPage-1})'
                     ${currentPage==1 ? "disabled" : ""}>
                     ← Trước
                 </button>
 
                 <span style="margin:0 10px;">Trang ${currentPage}</span>
 
-                <button onclick="loadHang('${currentKhach}', ${currentPage+1})"
+                <button onclick='loadHang(${JSON.stringify(currentKhach)}, ${currentPage+1})'
                     ${data.length < 15 ? "disabled" : ""}>
                     Sau →
                 </button>
