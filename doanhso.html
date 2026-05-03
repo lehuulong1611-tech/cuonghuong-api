@@ -1,4 +1,3 @@
-<html>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -23,11 +22,9 @@
         font-size: 18px;
     }
 
-    /* Tăng kích thước nút (quan trọng nhất) */
-    button {
-        font-size: 18px !important;
-        padding: 12px !important;
-    }
+    .btn {
+    font-size: 18px;
+}
 
     /* Nút tên NV và khách */
     .btn-name {
@@ -62,7 +59,7 @@
         <input type="radio" name="type" value="month"> Tháng hiện tại
     </label>
 
-    <button class="btn btn-name w-100 text-start" onclick="loadNhanVien()">
+    <button class="btn btn-primary w-100" onclick="loadNhanVien()">
         Xem
     </button>
 </div>
@@ -102,10 +99,12 @@ function loadNhanVien() {
                 html += `
                 <tr>
                     <td>
-                        <a href="#" onclick="loadKhach('${r.Tennv}', 1); return false;">
-                            ${r.Tennv}
-                        </a>
-                    </td>
+    <button 
+        class="btn btn-link text-start p-0"
+        onclick="loadKhach(${JSON.stringify(r.Tennv)}, 1)">
+        ${r.Tennv}
+    </button>
+</td>
                     <td>${r.SoDonBan}</td>
                     <td>${r.SoDonTraLai}</td>
                     <td>${Number(r.TongTien).toLocaleString('vi-VN')}</td>
@@ -142,9 +141,11 @@ function loadKhach(nv, page = 1) {
                 html += `
                 <tr>
                     <td>
-                        <a href="#" onclick="loadHang('${r.KhachHang}', 1); return false;">
-                            ${r.KhachHang}
-                        </a>
+                        <button 
+    class="btn btn-link text-start p-0"
+    onclick="loadHang(${JSON.stringify(r.KhachHang)}, 1)">
+    ${r.KhachHang}
+                </button>
                     </td>
                     <td>${r.SoDonBan}</td>
                     <td>${r.SoDonTra}</td>
@@ -157,7 +158,7 @@ function loadKhach(nv, page = 1) {
             // PAGING
             html += `
             <div class="mt-2">
-                <button class="btn btn-name w-100 text-start"
+                <button class="btn btn-outline-primary w-100"
                     onclick="loadKhach('${currentNhanVien}', ${currentPage - 1})"
                     ${currentPage == 1 ? "disabled" : ""}>
                     Prev
@@ -214,7 +215,7 @@ function loadHang(kh, page = 1) {
             // PAGING
             html += `
             <div class="mt-2">
-                <button class="btn btn-name w-100 text-start"
+                <button class="btn btn-outline-primary w-100"
                     onclick="loadHang('${currentKhach}', ${currentPage - 1})"
                     ${currentPage == 1 ? "disabled" : ""}>
                     Prev
