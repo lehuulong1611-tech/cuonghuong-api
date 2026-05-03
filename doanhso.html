@@ -134,7 +134,7 @@ function loadHang(kh, page = 1) {
     currentKhach = kh;
     currentPage = page;
 
-    fetch(`/api/doanhso/hanghoa?nhanvien=${currentNhanVien}&khachhang=${kh}&type=${currentType}&page=${page}`)
+    fetch(`/api/doanhso/hanghoa?nhanvien=${encodeURIComponent(currentNhanVien)}&khachhang=${encodeURIComponent(kh)}&type=${currentType}&page=${page}`)
         .then(res => res.json())
         .then(data => {
 
