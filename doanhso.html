@@ -24,7 +24,15 @@
     <label style="margin-left:10px;"><input type="radio" name="type" value="month"> Tháng hiện tại</label>
 
     <div style="margin-top:10px;">
-        <button onclick="loadNhanVien()">Xem</button>
+        <button onclick="loadNhanVien()"  style="
+        padding:12px 20px;
+        background:#0d6efd;
+        color:white;
+        border:none;
+        border-radius:6px;
+        font-size:16px;
+        width:300%;
+    ">Xem</button>
     </div>
 </div>
 
@@ -72,7 +80,7 @@ function loadNhanVien() {
                         </span>
                     </td>
                     <td style="border:1px solid #ddd; text-align:center;">${r.SoDonBan}</td>
-                    <td style="border:1px solid #ddd; text-align:center; color: red; font-weight: bold;">${r.SoDonTraLai}</td>
+                    <td style="border:1px solid #ddd; text-align:center; color: red; font-weight: bold;">${r.SoDonTraLai == 0 ? "" : r.SoDonTraLai}</td>
                     <td style="border:1px solid #ddd; text-align:right;">
                         ${Number(r.TongTien).toLocaleString('vi-VN')}
                     </td>
@@ -135,7 +143,7 @@ function loadKhach(nv, page = 1) {
                         </span>
                     </td>
                     <td style="border:1px solid #ddd; text-align:center;">${r.SoDonBan}</td>
-                    <td style="border:1px solid #ddd; text-align:center; color: red; font-weight: bold;">${r.SoDonTra}</td>
+                    <td style="border:1px solid #ddd; text-align:center; color: red; font-weight: bold;">${r.SoDonTra == 0 ? "" : r.SoDonTra}</td>
                     <td style="border:1px solid #ddd; text-align:right;">
                         ${Number(r.ThanhTien).toLocaleString('vi-VN')}
                     </td>
@@ -200,7 +208,7 @@ function loadHang(kh, page = 1) {
                 <tr>
                     <td style="border:1px solid #ddd; padding:10px;">${r.TenHang}</td>
                     <td style="border:1px solid #ddd; text-align:center;">${r.SLBan}</td>
-                    <td style="border:1px solid #ddd; text-align:center; color: red; font-weight: bold;">${r.SLTra}</td>
+                    <td style="border:1px solid #ddd; text-align:center; color: red; font-weight: bold;">${r.SLTra == 0 ? "" : r.SLTra}</td>
                     <td style="border:1px solid #ddd; text-align:right;">
                         ${Number(r.DonGia).toLocaleString('vi-VN')}
                     </td>
