@@ -198,35 +198,37 @@ app.get("/api/doanhso/hanghoa", async (req, res) => {
         }
 
         const result = await pool.request().query(`
-            WITH Data AS (
-    SELECT
-        TenHang,
+             WITH Data AS (
+        SELECT
+            TenHang,
 
-        SUM(CASE WHEN LoaiCT IN ('HDBB','HDBL') THEN So_Luong ELSE 0 END) AS SLBan,
-        SUM(CASE WHEN LoaiCT = 'HHTL' THEN So_Luong ELSE 0 END) AS SLTra,
+            SUM(CASE WHEN LoaiCT IN ('HDBB','HDBL') THEN So_Luong ELSE 0 END) AS SLBan,
+            SUM(CASE WHEN LoaiCT = 'HHTL' THEN So_Luong ELSE 0 END) AS SLTra,
 
-        AVG(Dongia) AS DonGia,
+            AVG(Dongia) AS DonGia,
 
-        SUM(CASE
-            WHEN LoaiCT IN ('HDBB','HDBL') THEN ThanhTien
-            WHEN LoaiCT='HHTL' THEN -ThanhTien
-            ELSE 0
-        END) AS ThanhTien
+            SUM(CASE
+                WHEN LoaiCT IN ('HDBB','HDBL') THEN ThanhTien
+                WHEN LoaiCT='HHTL' THEN -ThanhTien
+                ELSE 0
+            END) AS ThanhTien
 
-    FROM vw_doanhso
-    WHERE ${dateCondition}
-      AND Tennv = N'${nhanvien}'
-      AND KhachHang = N'${khachhang}'
+        FROM vw_doanhso
+        WHERE ${dateCondition}
+          AND Tennv = N'${nhanvien}'
+          AND KhachHang = N'${khachhang}'
 
-    GROUP BY TenHang
-)
+        GROUP BY TenHang
+    )
 
-SELECT *
-FROM Data
-ORDER BY ThanhTien DESC
-OFFSET ${offset} ROWS FETCH NEXT ${pageSize} ROWS ONLY
+    SELECT *
+    FROM Data
+    ORDER BY ThanhTien DESC
+    OFFSET ${offset} ROWS FETCH NEXT ${pageSize} ROWS ONLY
+`);
 
-        res.json(result.recordset);
+res.json(result.recordset);
+        
     } catch (err) {
         res.status(500).send(err.message);
     }
