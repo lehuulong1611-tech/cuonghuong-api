@@ -35,6 +35,16 @@
     <script>
     let currentPage = 1;
 
+function renderSL(x) {
+    if (!x || x == 0) return "";
+
+    if (x < 0) {
+        return `<span style="color:red; font-weight:bold;">${x}</span>`;
+    }
+
+    return x;
+}
+        
     function loadData(page = 1) {
         currentPage = page;
         let keyword = document.getElementById("search").value;
@@ -64,7 +74,7 @@
                                 ${Number(row["Giasi"] ?? 0).toLocaleString('vi-VN')}
                             </td>
                             <td style="border:1px solid #ddd; padding:6px; text-align:center;">
-                                ${row["SoLuongConLai"] ?? ""}
+                                ${renderSL(row["SoLuongConLai"])}}
                             </td>
                         </tr>
                     `;
