@@ -75,7 +75,7 @@ function loadKhach(nv, page = 1) {
     currentNhanVien = nv;
     currentPage = page;
 
-    fetch(`/api/doanhso/khachhang?nhanvien=${nv}&type=${currentType}&page=${page}`)
+        fetch(`/api/doanhso/khachhang?nhanvien=${nv}&type=${currentType}&page=${page}`)
         .then(res => res.json())
         .then(data => {
 
