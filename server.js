@@ -162,12 +162,17 @@ app.get("/api/doanhso/khachhang", async (req, res) => {
           AND Tennv = N'${nhanvien}'
 
         GROUP BY KhachHang
+    ),
+
+    DataCTE AS (
+        SELECT *,
+            ROW_NUMBER() OVER (ORDER BY ThanhTien DESC) AS RowNum
+        FROM Data
     )
 
     SELECT *
-    FROM Data
-    ORDER BY ThanhTien DESC
-    OFFSET ${offset} ROWS FETCH NEXT ${pageSize} ROWS ONLY
+    FROM DataCTE
+    WHERE RowNum BETWEEN ${offset + 1} AND ${offset + pageSize}
 `);
 
         res.json(result.recordset);
@@ -198,7 +203,7 @@ app.get("/api/doanhso/hanghoa", async (req, res) => {
         }
 
         const result = await pool.request().query(`
-             WITH Data AS (
+    WITH Data AS (
         SELECT
             TenHang,
 
@@ -219,12 +224,17 @@ app.get("/api/doanhso/hanghoa", async (req, res) => {
           AND KhachHang = N'${khachhang}'
 
         GROUP BY TenHang
+    ),
+
+    DataCTE AS (
+        SELECT *,
+            ROW_NUMBER() OVER (ORDER BY ThanhTien DESC) AS RowNum
+        FROM Data
     )
 
     SELECT *
-    FROM Data
-    ORDER BY ThanhTien DESC
-    OFFSET ${offset} ROWS FETCH NEXT ${pageSize} ROWS ONLY
+    FROM DataCTE
+    WHERE RowNum BETWEEN ${offset + 1} AND ${offset + pageSize}
 `);
 
 res.json(result.recordset);
