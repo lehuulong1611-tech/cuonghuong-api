@@ -17,7 +17,6 @@
 
 <h3>Kiểm tra doanh số</h3>
 
-<!-- RADIO -->
 <div style="margin-bottom:15px;">
     <label><input type="radio" name="type" value="day" checked> Ngày hiện tại</label>
     <label style="margin-left:10px;"><input type="radio" name="type" value="3days"> 3 ngày gần nhất</label><br>
@@ -37,6 +36,10 @@ let currentNhanVien = null;
 let currentKhach = null;
 let currentPage = 1;
 
+let dataNhanVien = [];
+let dataKhach = [];
+let dataHang = [];
+
 function getType() {
     return document.querySelector('input[name="type"]:checked').value;
 }
@@ -48,57 +51,68 @@ function loadNhanVien() {
     fetch(`/api/doanhso?type=${currentType}`)
         .then(res => res.json())
         .then(data => {
-
-            let tong = 0;
-
-            let html = `
-            <table style="width:100%; border-collapse:collapse;">
-            <tr style="background:#eee;">
-                <th style="border:1px solid #ccc; padding:10px;">Nhân viên</th>
-                <th style="border:1px solid #ccc;">Đơn bán</th>
-                <th style="border:1px solid #ccc;">Đơn trả</th>
-                <th style="border:1px solid #ccc;">Thành tiền</th>
-            </tr>
-            `;
-
-            data.forEach(r => {
-                tong += Number(r.TongTien || 0);
-
-                html += `
-                <tr>
-                    <td style="border:1px solid #ddd; padding:10px;">
-                        <span class="nv" data-name="${r.Tennv}" style="color:blue; cursor:pointer;">
-                            ${r.Tennv}
-                        </span>
-                    </td>
-                    <td style="border:1px solid #ddd; text-align:center;">${r.SoDonBan}</td>
-                    <td style="border:1px solid #ddd; text-align:center;">${r.SoDonTraLai}</td>
-                    <td style="border:1px solid #ddd; text-align:right;">
-                        ${Number(r.TongTien).toLocaleString('vi-VN')}
-                    </td>
-                </tr>
-                `;
-            });
-
-            html += `
-            <tr style="font-weight:bold; background:#f9f9f9;">
-                <td style="border:1px solid #ccc; padding:10px;">Tổng</td>
-                <td></td>
-                <td></td>
-                <td style="border:1px solid #ccc; text-align:right;">
-                    ${tong.toLocaleString('vi-VN')}
-                </td>
-            </tr>
-            </table>
-            `;
-
-            document.getElementById("data").innerHTML = html;
-
-            // GÁN CLICK
-            document.querySelectorAll(".nv").forEach(el => {
-                el.onclick = () => loadKhach(el.dataset.name, 1);
-            });
+            dataNhanVien = data;
+            renderNhanVien(data);
         });
+}
+
+function renderNhanVien(data) {
+    let tong = 0;
+
+    let html = `
+    <table style="width:100%; border-collapse:collapse;">
+        <tr style="background:#eee;">
+            <th>Nhân viên</th>
+            <th>Đơn bán</th>
+            <th>Đơn trả</th>
+            <th>Thành tiền</th>
+        </tr>
+        <tr>
+            <th><input onkeyup="filterNhanVien()" id="f_nv"></th>
+            <th><input onkeyup="filterNhanVien()" id="f_db"></th>
+            <th><input onkeyup="filterNhanVien()" id="f_dt"></th>
+            <th><input onkeyup="filterNhanVien()" id="f_tt"></th>
+        </tr>
+    `;
+
+    data.forEach(r => {
+        tong += Number(r.TongTien || 0);
+
+        html += `
+        <tr>
+            <td style="padding:10px; border:1px solid #ddd;">
+                <span class="nv" data-name="${r.Tennv}" style="color:blue; cursor:pointer;">
+                    ${r.Tennv}
+                </span>
+            </td>
+            <td style="text-align:center;">${r.SoDonBan}</td>
+            <td style="text-align:center;">${r.SoDonTraLai}</td>
+            <td style="text-align:right;">${Number(r.TongTien).toLocaleString('vi-VN')}</td>
+        </tr>
+        `;
+    });
+
+    html += `
+    <tr style="font-weight:bold; background:#f9f9f9;">
+        <td>Tổng</td><td></td><td></td>
+        <td style="text-align:right;">${tong.toLocaleString('vi-VN')}</td>
+    </tr>
+    </table>
+    `;
+
+    document.getElementById("data").innerHTML = html;
+
+    document.querySelectorAll(".nv").forEach(el => {
+        el.onclick = () => loadKhach(el.dataset.name, 1);
+    });
+}
+
+function filterNhanVien() {
+    let ten = document.getElementById("f_nv").value.toLowerCase();
+    let filtered = dataNhanVien.filter(r =>
+        (!ten || r.Tennv.toLowerCase().includes(ten))
+    );
+    renderNhanVien(filtered);
 }
 
 // ================= KHÁCH =================
@@ -109,64 +123,76 @@ function loadKhach(nv, page = 1) {
     fetch(`/api/doanhso/khachhang?nhanvien=${encodeURIComponent(nv)}&type=${currentType}&page=${page}`)
         .then(res => res.json())
         .then(data => {
-
-            let tong = 0;
-
-            let html = `
-            <button onclick="loadNhanVien()">← Quay lại</button>
-
-            <table style="width:100%; border-collapse:collapse;">
-            <tr style="background:#eee;">
-                <th style="border:1px solid #ccc;">Khách hàng</th>
-                <th style="border:1px solid #ccc;">Đơn bán</th>
-                <th style="border:1px solid #ccc;">Đơn trả</th>
-                <th style="border:1px solid #ccc;">Thành tiền</th>
-            </tr>
-            `;
-
-            data.forEach(r => {
-                tong += Number(r.ThanhTien || 0);
-
-                html += `
-                <tr>
-                    <td style="border:1px solid #ddd; padding:10px;">
-                        <span class="kh" data-name="${r.KhachHang}" style="color:blue; cursor:pointer;">
-                            ${r.KhachHang}
-                        </span>
-                    </td>
-                    <td style="border:1px solid #ddd; text-align:center;">${r.SoDonBan}</td>
-                    <td style="border:1px solid #ddd; text-align:center;">${r.SoDonTra}</td>
-                    <td style="border:1px solid #ddd; text-align:right;">
-                        ${Number(r.ThanhTien).toLocaleString('vi-VN')}
-                    </td>
-                </tr>
-                `;
-            });
-
-            html += `
-            <tr style="font-weight:bold; background:#f9f9f9;">
-                <td>Tổng</td><td></td><td></td>
-                <td style="text-align:right;">${tong.toLocaleString('vi-VN')}</td>
-            </tr>
-            </table>
-            `;
-
-            // PAGING
-            html += `
-            <div style="text-align:center; margin-top:10px;">
-                <button onclick="loadKhach(currentNhanVien, ${page-1})" ${page==1?"disabled":""}>← Trước</button>
-                <span>Trang ${page}</span>
-                <button onclick="loadKhach(currentNhanVien, ${page+1})" ${data.length<15?"disabled":""}>Sau →</button>
-            </div>
-            `;
-
-            document.getElementById("data").innerHTML = html;
-
-            // CLICK KHÁCH
-            document.querySelectorAll(".kh").forEach(el => {
-                el.onclick = () => loadHang(el.dataset.name, 1);
-            });
+            dataKhach = data;
+            renderKhach(data);
         });
+}
+
+function renderKhach(data) {
+    let tong = 0;
+
+    let html = `
+    <button onclick="loadNhanVien()">← Quay lại</button>
+
+    <table style="width:100%; border-collapse:collapse;">
+        <tr style="background:#eee;">
+            <th>Khách hàng</th>
+            <th>Đơn bán</th>
+            <th>Đơn trả</th>
+            <th>Thành tiền</th>
+        </tr>
+        <tr>
+            <th><input onkeyup="filterKhach()" id="f_kh"></th>
+            <th></th><th></th><th></th>
+        </tr>
+    `;
+
+    data.forEach(r => {
+        tong += Number(r.ThanhTien || 0);
+
+        html += `
+        <tr>
+            <td style="padding:10px;">
+                <span class="kh" data-name="${r.KhachHang}" style="color:blue; cursor:pointer;">
+                    ${r.KhachHang}
+                </span>
+            </td>
+            <td style="text-align:center;">${r.SoDonBan}</td>
+            <td style="text-align:center;">${r.SoDonTra}</td>
+            <td style="text-align:right;">${Number(r.ThanhTien).toLocaleString('vi-VN')}</td>
+        </tr>
+        `;
+    });
+
+    html += `
+    <tr style="font-weight:bold;">
+        <td>Tổng</td><td></td><td></td>
+        <td style="text-align:right;">${tong.toLocaleString('vi-VN')}</td>
+    </tr>
+    </table>
+    `;
+
+    html += `
+    <div style="text-align:center; margin-top:10px;">
+        <button onclick="loadKhach(currentNhanVien, ${currentPage-1})" ${currentPage==1?"disabled":""}>← Trước</button>
+        <span>Trang ${currentPage}</span>
+        <button onclick="loadKhach(currentNhanVien, ${currentPage+1})" ${data.length<15?"disabled":""}>Sau →</button>
+    </div>
+    `;
+
+    document.getElementById("data").innerHTML = html;
+
+    document.querySelectorAll(".kh").forEach(el => {
+        el.onclick = () => loadHang(el.dataset.name, 1);
+    });
+}
+
+function filterKhach() {
+    let ten = document.getElementById("f_kh").value.toLowerCase();
+    let filtered = dataKhach.filter(r =>
+        (!ten || r.KhachHang.toLowerCase().includes(ten))
+    );
+    renderKhach(filtered);
 }
 
 // ================= HÀNG =================
@@ -177,61 +203,72 @@ function loadHang(kh, page = 1) {
     fetch(`/api/doanhso/hanghoa?nhanvien=${encodeURIComponent(currentNhanVien)}&khachhang=${encodeURIComponent(kh)}&type=${currentType}&page=${page}`)
         .then(res => res.json())
         .then(data => {
-
-            let tong = 0;
-
-            let html = `
-            <button onclick="loadKhach(currentNhanVien,1)">← Quay lại</button>
-
-            <table style="width:100%; border-collapse:collapse;">
-            <tr style="background:#eee;">
-                <th>Tên hàng</th>
-                <th>SL bán</th>
-                <th>SL trả</th>
-                <th>Đơn giá</th>
-                <th>Thành tiền</th>
-            </tr>
-            `;
-
-            data.forEach(r => {
-                tong += Number(r.ThanhTien || 0);
-
-                html += `
-                <tr>
-                    <td style="border:1px solid #ddd; padding:10px;">${r.TenHang}</td>
-                    <td style="border:1px solid #ddd; text-align:center;">${r.SLBan}</td>
-                    <td style="border:1px solid #ddd; text-align:center;">${r.SLTra}</td>
-                    <td style="border:1px solid #ddd; text-align:right;">
-                        ${Number(r.DonGia).toLocaleString('vi-VN')}
-                    </td>
-                    <td style="border:1px solid #ddd; text-align:right;">
-                        ${Number(r.ThanhTien).toLocaleString('vi-VN')}
-                    </td>
-                </tr>
-                `;
-            });
-
-            html += `
-            <tr style="font-weight:bold; background:#f9f9f9;">
-                <td colspan="4">Tổng</td>
-                <td style="text-align:right;">${tong.toLocaleString('vi-VN')}</td>
-            </tr>
-            </table>
-            `;
-
-            html += `
-            <div style="text-align:center; margin-top:10px;">
-                <button onclick="loadHang(currentKhach, ${page-1})" ${page==1?"disabled":""}>← Trước</button>
-                <span>Trang ${page}</span>
-                <button onclick="loadHang(currentKhach, ${page+1})" ${data.length<15?"disabled":""}>Sau →</button>
-            </div>
-            `;
-
-            document.getElementById("data").innerHTML = html;
+            dataHang = data;
+            renderHang(data);
         });
 }
 
-// LOAD
+function renderHang(data) {
+    let tong = 0;
+
+    let html = `
+    <button onclick="loadKhach(currentNhanVien,1)">← Quay lại</button>
+
+    <table style="width:100%; border-collapse:collapse;">
+        <tr style="background:#eee;">
+            <th>Tên hàng</th>
+            <th>SL bán</th>
+            <th>SL trả</th>
+            <th>Đơn giá</th>
+            <th>Thành tiền</th>
+        </tr>
+        <tr>
+            <th><input onkeyup="filterHang()" id="f_h"></th>
+            <th></th><th></th><th></th><th></th>
+        </tr>
+    `;
+
+    data.forEach(r => {
+        tong += Number(r.ThanhTien || 0);
+
+        html += `
+        <tr>
+            <td style="padding:10px;">${r.TenHang}</td>
+            <td style="text-align:center;">${r.SLBan}</td>
+            <td style="text-align:center;">${r.SLTra}</td>
+            <td style="text-align:right;">${Number(r.DonGia).toLocaleString('vi-VN')}</td>
+            <td style="text-align:right;">${Number(r.ThanhTien).toLocaleString('vi-VN')}</td>
+        </tr>
+        `;
+    });
+
+    html += `
+    <tr style="font-weight:bold;">
+        <td colspan="4">Tổng</td>
+        <td style="text-align:right;">${tong.toLocaleString('vi-VN')}</td>
+    </tr>
+    </table>
+    `;
+
+    html += `
+    <div style="text-align:center; margin-top:10px;">
+        <button onclick="loadHang(currentKhach, ${currentPage-1})" ${currentPage==1?"disabled":""}>← Trước</button>
+        <span>Trang ${currentPage}</span>
+        <button onclick="loadHang(currentKhach, ${currentPage+1})" ${data.length<15?"disabled":""}>Sau →</button>
+    </div>
+    `;
+
+    document.getElementById("data").innerHTML = html;
+}
+
+function filterHang() {
+    let ten = document.getElementById("f_h").value.toLowerCase();
+    let filtered = dataHang.filter(r =>
+        (!ten || r.TenHang.toLowerCase().includes(ten))
+    );
+    renderHang(filtered);
+}
+
 loadNhanVien();
 
 </script>
