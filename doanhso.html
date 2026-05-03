@@ -55,7 +55,7 @@ function loadNhanVien() {
                 html += `
                 <tr>
                     <td>
-                        <a href="#" onclick="loadKhach('${r.Tennv}', 1)">
+                        <a href="#" onclick="loadKhach('${r.Tennv}', 1); return false;">
                             ${r.Tennv}
                         </a>
                     </td>
@@ -95,7 +95,7 @@ function loadKhach(nv, page = 1) {
                 html += `
                 <tr>
                     <td>
-                        <a href="#" onclick="loadHang('${r.KhachHang}', 1)">
+                        <a href="#" onclick="loadHang('${r.KhachHang}', 1); return false;">
                             ${r.KhachHang}
                         </a>
                     </td>
