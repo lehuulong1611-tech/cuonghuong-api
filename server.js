@@ -68,18 +68,22 @@ app.get("/api/doanhso", async (req, res) => {
 
         const pool = await sql.connect(config);
 
-        let dateCondition = "";
+       let dateCondition = "";
 
-        if (type === "month") {
-            dateCondition = `
-                MONTH(Ngay) = MONTH(GETDATE())
-                AND YEAR(Ngay) = YEAR(GETDATE())
-            `;
-        } else {
-            dateCondition = `
-                CAST(Ngay AS DATE) = CAST(GETDATE() AS DATE)
-            `;
-        }
+if (type === "month") {
+    dateCondition = `
+        MONTH(Ngay) = MONTH(GETDATE())
+        AND YEAR(Ngay) = YEAR(GETDATE())
+    `;
+} else if (type === "3days") {
+    dateCondition = `
+        CAST(Ngay AS DATE) >= DATEADD(DAY, -2, CAST(GETDATE() AS DATE))
+    `;
+} else {
+    dateCondition = `
+        CAST(Ngay AS DATE) = CAST(GETDATE() AS DATE)
+    `;
+}
 
         const result = await pool.request()
             .query(`
@@ -106,14 +110,131 @@ app.get("/api/doanhso", async (req, res) => {
                 WHERE ${dateCondition}
                 GROUP BY Tennv
                 ORDER BY TongTien DESC
-            `);
-
+            `);        
         res.json(result.recordset);
 
     } catch (err) {
         res.status(500).send(err.message);
     }
 });
+
+// API Doanh số khách hàng
+app.get("/api/doanhso/khachhang", async (req, res) => {
+    try {
+        const { nhanvien, type } = req.query;
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = 15;
+        const offset = (page - 1) * pageSize;
+
+        const pool = await sql.connect(config);
+
+        let dateCondition = "";
+
+        if (type === "month") {
+            dateCondition = `MONTH(Ngay)=MONTH(GETDATE()) AND YEAR(Ngay)=YEAR(GETDATE())`;
+        } else if (type === "3days") {
+            dateCondition = `CAST(Ngay AS DATE) >= DATEADD(DAY, -2, CAST(GETDATE() AS DATE))`;
+        } else {
+            dateCondition = `CAST(Ngay AS DATE) = CAST(GETDATE() AS DATE)`;
+        }
+
+        const result = await pool.request().query(`
+    WITH Data AS (
+        SELECT
+            KhachHang,
+
+            COUNT(DISTINCT CASE
+                WHEN LoaiCT IN ('HDBB','HDBL') THEN Chung_tu
+            END) AS SoDonBan,
+
+            COUNT(DISTINCT CASE
+                WHEN LoaiCT = 'HHTL' THEN Chung_tu
+            END) AS SoDonTra,
+
+            SUM(CASE
+                WHEN LoaiCT IN ('HDBB','HDBL') THEN ThanhTien
+                WHEN LoaiCT='HHTL' THEN -ThanhTien
+                ELSE 0
+            END) AS ThanhTien
+
+        FROM vw_doanhso
+        WHERE ${dateCondition}
+          AND Tennv = N'${nhanvien}'
+
+        GROUP BY KhachHang
+    )
+
+    SELECT *
+    FROM Data
+    ORDER BY ThanhTien DESC
+    OFFSET ${offset} ROWS FETCH NEXT ${pageSize} ROWS ONLY
+`);
+
+        res.json(result.recordset);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+
+//API Doanh số hàng hóa
+app.get("/api/doanhso/hanghoa", async (req, res) => {
+    try {
+        const { nhanvien, khachhang, type } = req.query;
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = 15;
+        const offset = (page - 1) * pageSize;
+
+        const pool = await sql.connect(config);
+
+        let dateCondition = "";
+
+        if (type === "month") {
+            dateCondition = `MONTH(Ngay)=MONTH(GETDATE()) AND YEAR(Ngay)=YEAR(GETDATE())`;
+        } else if (type === "3days") {
+            dateCondition = `CAST(Ngay AS DATE) >= DATEADD(DAY, -2, CAST(GETDATE() AS DATE))`;
+        } else {
+            dateCondition = `CAST(Ngay AS DATE) = CAST(GETDATE() AS DATE)`;
+        }
+
+        const result = await pool.request().query(`
+            WITH Data AS (
+    SELECT
+        TenHang,
+
+        SUM(CASE WHEN LoaiCT IN ('HDBB','HDBL') THEN So_Luong ELSE 0 END) AS SLBan,
+        SUM(CASE WHEN LoaiCT = 'HHTL' THEN So_Luong ELSE 0 END) AS SLTra,
+
+        AVG(Dongia) AS DonGia,
+
+        SUM(CASE
+            WHEN LoaiCT IN ('HDBB','HDBL') THEN ThanhTien
+            WHEN LoaiCT='HHTL' THEN -ThanhTien
+            ELSE 0
+        END) AS ThanhTien
+
+    FROM vw_doanhso
+    WHERE ${dateCondition}
+      AND Tennv = N'${nhanvien}'
+      AND KhachHang = N'${khachhang}'
+
+    GROUP BY TenHang
+)
+
+SELECT *
+FROM Data
+ORDER BY ThanhTien DESC
+OFFSET ${offset} ROWS FETCH NEXT ${pageSize} ROWS ONLY
+
+        res.json(result.recordset);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+
+
+
 
 const PORT = process.env.PORT || 3000;
 
