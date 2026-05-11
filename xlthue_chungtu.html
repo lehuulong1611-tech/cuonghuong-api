@@ -127,7 +127,7 @@ fetch(`/api/xlthue/chungtu?khachhang=${kh}&from=${from}&to=${to}`)
             </td>
 
             <td style="color:blue; cursor:pointer;"
-                onclick="alert('Chi tiết: ${r.Chung_tu}')">
+                onclick="openChiTiet('${r.Chung_tu}')">
                 ${r.Chung_tu}
             </td>
 
