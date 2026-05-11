@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Xử lý hóa đơn thuế</title>
+
+<style>
+body {
+    margin: 10px;
+    font-size: 16px;
+    font-family: Arial;
+}
+
+.box {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background: #0d6efd;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+}
+</style>
+
+</head>
+
+<body>
+
+<h3>Xử lý hóa đơn thuế</h3>
+
+<!-- CHỌN NHANH -->
+<div class="box">
+    <label>Chọn nhanh</label>
+    <button onclick="setToday()">Hôm nay</button>
+</div>
+
+<!-- CHỌN KHOẢNG THỜI GIAN -->
+<div class="box">
+    <label>Từ ngày</label>
+    <input type="date" id="fromDate">
+
+    <label>Đến ngày</label>
+    <input type="date" id="toDate">
+
+    <button onclick="filterRange()">Lọc dữ liệu</button>
+</div>
+
+<!-- KẾT QUẢ -->
+<div id="data"></div>
+
+<script>
+
+let fromDate = null;
+let toDate = null;
+
+// mặc định hôm nay
+window.onload = function () {
+    let today = new Date().toISOString().split("T")[0];
+
+    document.getElementById("fromDate").value = today;
+    document.getElementById("toDate").value = today;
+
+    fromDate = today;
+    toDate = today;
+
+    loadData();
+};
+
+// chọn nhanh hôm nay
+function setToday() {
+    let today = new Date().toISOString().split("T")[0];
+
+    document.getElementById("fromDate").value = today;
+    document.getElementById("toDate").value = today;
+
+    fromDate = today;
+    toDate = today;
+
+    loadData();
+}
+
+// lọc khoảng thời gian
+function filterRange() {
+    fromDate = document.getElementById("fromDate").value;
+    toDate = document.getElementById("toDate").value;
+
+    loadData();
+}
+
+// load dữ liệu (chưa xử lý API)
+function loadData() {
+
+    let html = `
+        <div class="box">
+            <b>Khoảng thời gian:</b><br>
+            ${fromDate} → ${toDate}
+        </div>
+    `;
+
+    document.getElementById("data").innerHTML = html;
+}
+
+</script>
+
+</body>
+</html>
