@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Chi tiết hóa đơn VAT</title>
+
+<style>
+
+body{
+    margin:10px;
+    font-family:Arial;
+    font-size:16px;
+}
+
+.header{
+    margin-bottom:10px;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    background:#f8f9fa;
+}
+
+.back-btn{
+    display:inline-block;
+    margin-bottom:10px;
+    padding:8px 12px;
+    background:#f1f1f1;
+    border:1px solid #ccc;
+    border-radius:6px;
+    text-decoration:none;
+    color:black;
+}
+
+.table-wrap{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:700px;
+}
+
+th, td{
+    border:1px solid #ccc;
+    padding:8px;
+}
+
+th{
+    background:#e9ecef;
+    text-align:center;
+}
+
+.money{
+    text-align:right;
+}
+
+.center{
+    text-align:center;
+}
+
+.total{
+    margin-top:10px;
+    text-align:right;
+    font-size:18px;
+    font-weight:bold;
+    color:#dc3545;
+}
+
+</style>
+</head>
+
+<body>
+
+<a href="javascript:history.back()" class="back-btn">
+    ← Quay lại
+</a>
+
+<div class="header" id="info"></div>
+
+<div class="table-wrap">
+    <div id="data"></div>
+</div>
+
+<div class="total" id="tong"></div>
+
+<script>
+
+const url = new URLSearchParams(window.location.search);
+
+const chungtu = url.get("chungtu");
+
+function loadData(){
+
+fetch(`/api/xlthue/chitiet?chungtu=${encodeURIComponent(chungtu)}`)
+.then(r => r.json())
+.then(data => {
+
+    if(data.length === 0){
+
+        document.getElementById("data").innerHTML =
+            "<p>Không có dữ liệu</p>";
+
+        return;
+    }
+
+    const first = data[0];
+
+    document.getElementById("info").innerHTML = `
+        <div><b>Chứng từ:</b> ${first.Chung_tu}</div>
+        <div><b>Khách hàng:</b> ${first.KhachHang}</div>
+        <div><b>Ngày:</b> ${new Date(first.Ngay).toLocaleDateString()}</div>
+    `;
+
+    let tong = 0;
+
+    let html = `
+    <table>
+        <tr>
+            <th>Tên hàng</th>
+            <th>SL</th>
+            <th>ĐVT</th>
+            <th>Đơn giá</th>
+            <th>Thành tiền</th>
+        </tr>
+    `;
+
+    data.forEach(r => {
+
+        tong += Number(r.ThanhTien || 0);
+
+        html += `
+        <tr>
+            <td>${r.TenHang || ""}</td>
+
+            <td class="center">
+                ${r.So_Luong || ""}
+            </td>
+
+            <td class="center">
+                ${r.DVT || ""}
+            </td>
+
+            <td class="money">
+                ${Number(r.Dongia || 0).toLocaleString('vi-VN')}
+            </td>
+
+            <td class="money">
+                ${Number(r.ThanhTien || 0).toLocaleString('vi-VN')}
+            </td>
+        </tr>
+        `;
+    });
+
+    html += `</table>`;
+
+    document.getElementById("data").innerHTML = html;
+
+    document.getElementById("tong").innerHTML =
+        `TỔNG: ${tong.toLocaleString('vi-VN')} đ`;
+
+});
+
+}
+
+loadData();
+
+</script>
+
+</body>
+</html>
