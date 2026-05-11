@@ -274,7 +274,7 @@ app.post("/api/xlthue/save-vat", async (req, res) => {
                     .input("status", sql.NVarChar, status)
                     .query(`
                         INSERT INTO dbo.HoaDonThue_TrangThai
-                        (Manv, Makhach, Chung_tu, Ngaycapnhat, Tinhtrang)
+                        (MaNhanVien, Makhach, Chung_tu, Ngaycapnhat, Tinhtrang)
                         VALUES
                         ('ketoan', @Makhach, @Chung_tu, GETDATE(), @status)
                     `);
