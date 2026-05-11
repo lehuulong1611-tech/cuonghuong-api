@@ -230,51 +230,62 @@ app.get("/api/xlthue/chungtu", async (req, res) => {
 //API xử lý chi tiết đơn thuế khách hàng
 app.post("/api/xlthue/save-vat", async (req, res) => {
     try {
-        const { Makhach, Chung_tu, status } = req.body;
+        const { khachhang, data } = req.body;
 
         const pool = await sql.connect(config);
 
-        const check = await pool.request()
-            .input("Makhach", sql.NVarChar, Makhach)
-            .input("Chung_tu", sql.NVarChar, Chung_tu)
-            .query(`
-                SELECT * FROM dbo.HoaDonThue_TrangThai
-                WHERE Makhach = @Makhach AND Chung_tu = @Chung_tu
-            `);
+        if (!khachhang || !data || !Array.isArray(data)) {
+            return res.status(400).json({ ok: false, message: "Invalid data" });
+        }
 
-        if (check.recordset.length > 0) {
+        for (const item of data) {
 
-            // UPDATE
-            await pool.request()
-                .input("Makhach", sql.NVarChar, Makhach)
-                .input("Chung_tu", sql.NVarChar, Chung_tu)
-                .input("status", sql.NVarChar, status)
+            const status = item.checked ? "đã xuất" : "đã hủy VAT";
+            const chung_tu = item.chung_tu;
+
+            const check = await pool.request()
+                .input("Makhach", sql.NVarChar, khachhang)
+                .input("Chung_tu", sql.NVarChar, chung_tu)
                 .query(`
-                    UPDATE dbo.HoaDonThue_TrangThai
-                    SET Tinhtrang = @status,
-                        Ngaycapnhat = GETDATE()
+                    SELECT 1 FROM dbo.HoaDonThue_TrangThai
                     WHERE Makhach = @Makhach AND Chung_tu = @Chung_tu
                 `);
 
-        } else {
+            if (check.recordset.length > 0) {
 
-            // INSERT
-            await pool.request()
-                .input("Makhach", sql.NVarChar, Makhach)
-                .input("Chung_tu", sql.NVarChar, Chung_tu)
-                .input("status", sql.NVarChar, status)
-                .query(`
-                    INSERT INTO dbo.HoaDonThue_TrangThai
-                    (Manv, Makhach, Chung_tu, Ngaycapnhat, Tinhtrang)
-                    VALUES
-                    ('ketoan', @Makhach, @Chung_tu, GETDATE(), @status)
-                `);
+                // UPDATE
+                await pool.request()
+                    .input("Makhach", sql.NVarChar, khachhang)
+                    .input("Chung_tu", sql.NVarChar, chung_tu)
+                    .input("status", sql.NVarChar, status)
+                    .query(`
+                        UPDATE dbo.HoaDonThue_TrangThai
+                        SET Tinhtrang = @status,
+                            Ngaycapnhat = GETDATE()
+                        WHERE Makhach = @Makhach AND Chung_tu = @Chung_tu
+                    `);
+
+            } else {
+
+                // INSERT
+                await pool.request()
+                    .input("Makhach", sql.NVarChar, khachhang)
+                    .input("Chung_tu", sql.NVarChar, chung_tu)
+                    .input("status", sql.NVarChar, status)
+                    .query(`
+                        INSERT INTO dbo.HoaDonThue_TrangThai
+                        (Manv, Makhach, Chung_tu, Ngaycapnhat, Tinhtrang)
+                        VALUES
+                        ('ketoan', @Makhach, @Chung_tu, GETDATE(), @status)
+                    `);
+            }
         }
 
-        res.json({ ok: true });
+        res.json({ ok: true, message: "Saved VAT successfully" });
 
     } catch (err) {
-        res.status(500).send(err.message);
+        console.error(err);
+        res.status(500).json({ ok: false, message: err.message });
     }
 });
 
