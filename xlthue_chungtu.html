@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Cấp 2 VAT</title>
+</head>
+<body style="font-size:16px; margin:10px;">
+
+<h3>XL Thuế - Cấp 2</h3>
+
+<div id="info"></div>
+
+<script>
+const url = new URLSearchParams(window.location.search);
+
+const kh = url.get("kh");
+const from = url.get("from");
+const to = url.get("to");
+
+document.getElementById("info").innerHTML = `
+    <p><b>Khách:</b> ${kh}</p>
+    <p><b>Từ ngày:</b> ${from}</p>
+    <p><b>Đến ngày:</b> ${to}</p>
+`;
+</script>
+
+</body>
+</html>
