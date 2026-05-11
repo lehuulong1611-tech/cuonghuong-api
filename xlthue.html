@@ -66,6 +66,25 @@
 <div id="data"></div>
 
 <script>
+    function openCap2(kh) {
+
+    let from = document.getElementById("from")?.value;
+    let to = document.getElementById("to")?.value;
+
+    if (!from || !to) {
+        let today = new Date();
+        let past = new Date();
+        past.setMonth(past.getMonth() - 3);
+
+        from = past.toISOString().split("T")[0];
+        to = today.toISOString().split("T")[0];
+    }
+
+    const url =
+        `xlthue_chungtu.html?kh=${encodeURIComponent(kh)}&from=${from}&to=${to}`;
+
+    window.location.href = url;
+}
 
 let pageSize = 10;
 let currentPage = 1;
@@ -119,8 +138,9 @@ function renderPage(page) {
         html += `
         <tr>
             <td>
-                <div class="ten-khach">
-                    ${r.Ten_HoaDon || r.KhachHang}
+                <div class="ten-khach" onclick="openCap2('${r.KhachHang || r.Ten_HoaDon}')"
+     style="color:blue;cursor:pointer;">
+                    ${r.KhachHang || r.Ten_HoaDon}
                 </div>
             </td>
 
