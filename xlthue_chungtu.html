@@ -80,7 +80,14 @@ input[type="checkbox"]{
 <div id="data"></div>
 
 <script>
+function openChiTiet(chungtu){
 
+    window.location.href =
+        `xlthue_chitiet.html?chungtu=${encodeURIComponent(chungtu)}`;
+
+}
+
+    
 const url = new URLSearchParams(window.location.search);
 const kh = url.get("kh");
 const from = url.get("from");
