@@ -2,41 +2,80 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Cấp 2 VAT</title>
 
 <style>
-body { font-size:16px; margin:10px; }
+body{
+    font-size:17px;
+    margin:10px;
+    font-family: Arial;
+}
 
-table {
+/* HEADER */
+.header{
+    margin-bottom:10px;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    background:#f8f9fa;
+}
+
+.header .info{
+    margin-bottom:8px;
+}
+
+/* BUTTON */
+.btn-save{
+    width:100%;
+    padding:12px;
+    background:#198754;
+    color:white;
+    border:none;
+    border-radius:6px;
+    font-size:18px;
+}
+
+/* TABLE */
+table{
     width:100%;
     border-collapse:collapse;
 }
 
-th,td {
-    border:1px solid #ddd;
-    padding:8px;
+th,td{
+    border:1px solid #ccc;
+    padding:10px;
 }
 
-th { background:#f1f1f1; }
+th{
+    background:#e9ecef;
+    text-align:center;
+}
 
-.vat {
+td{
+    vertical-align:middle;
+}
+
+/* VAT DATE */
+.vat-date{
     color:green;
     font-weight:bold;
 }
 
-.btn {
-    padding:8px 12px;
-    background:#0d6efd;
-    color:white;
-    border:none;
-    border-radius:6px;
+/* CHECKBOX */
+input[type="checkbox"]{
+    transform:scale(1.3);
 }
 </style>
 </head>
 
 <body>
 
-<h3>Danh sách chứng từ VAT</h3>
+<div class="header">
+    <div class="info" id="infoKhach"></div>
+    <button class="btn-save" onclick="saveVAT()">💾 LƯU VAT</button>
+</div>
 
 <div id="data"></div>
 
@@ -47,82 +86,98 @@ const kh = url.get("kh");
 const from = url.get("from");
 const to = url.get("to");
 
-function loadData() {
+let vatData = [];
+
+function loadData(){
 
 fetch(`/api/xlthue/chungtu?khachhang=${kh}&from=${from}&to=${to}`)
 .then(r => r.json())
 .then(data => {
 
-let html = `
-<table>
-<tr>
-<th>✔</th>
-<th>Khách</th>
-<th>Chứng từ</th>
-<th>Thành tiền</th>
-<th>Ngày VAT</th>
-<th>Lưu</th>
-</tr>
-`;
+    vatData = data;
 
-data.forEach(r => {
+    let info = data[0] || {};
 
-const checked = r.Tinhtrang === "đã xuất" ? "checked" : "";
-const ngay = r.Ngaycapnhat ? `<span class="vat">${new Date(r.Ngaycapnhat).toLocaleDateString()}</span>` : "";
+    document.getElementById("infoKhach").innerHTML = `
+        <b>Khách:</b> ${info.KhachHang || ""} |
+        <b>MST:</b> ${info.MST || ""}
+    `;
 
-html += `
-<tr>
-<td>
-<input type="checkbox" id="cb_${r.Chung_tu}" ${checked}>
-</td>
+    let html = `
+    <table>
+        <tr>
+            <th>✔</th>
+            <th>Chứng từ</th>
+            <th>Thành tiền</th>
+            <th>Ngày VAT</th>
+        </tr>
+    `;
 
-<td>${r.KhachHang}</td>
+    data.forEach(r => {
 
-<td onclick="openCT('${r.Chung_tu}')" style="color:blue;cursor:pointer;">
-${r.Chung_tu}
-</td>
+        let checked = r.Tinhtrang === "đã xuất" ? "checked" : "";
+        let ngay = r.Ngaycapnhat 
+            ? `<span class="vat-date">${new Date(r.Ngaycapnhat).toLocaleDateString()}</span>`
+            : "";
 
-<td style="text-align:right;">
-${Number(r.ThanhTien).toLocaleString('vi-VN')}
-</td>
+        html += `
+        <tr>
+            <td style="text-align:center;">
+                <input type="checkbox" id="cb_${r.Chung_tu}" ${checked}>
+            </td>
 
-<td>${ngay}</td>
+            <td style="color:blue; cursor:pointer;"
+                onclick="alert('Chi tiết: ${r.Chung_tu}')">
+                ${r.Chung_tu}
+            </td>
 
-<td>
-<button class="btn" onclick="save('${r.KhachHang}','${r.Chung_tu}')">
-Lưu
-</button>
-</td>
-</tr>
-`;
-});
+            <td style="text-align:right;">
+                ${Number(r.ThanhTien).toLocaleString('vi-VN')}
+            </td>
 
-html += `</table>`;
-document.getElementById("data").innerHTML = html;
+            <td style="text-align:center;">
+                ${ngay}
+            </td>
+        </tr>
+        `;
+    });
+
+    html += `</table>`;
+
+    document.getElementById("data").innerHTML = html;
 });
 
 }
 
-function save(kh, ct) {
+function saveVAT(){
 
-const cb = document.getElementById("cb_" + ct);
-const status = cb.checked ? "đã xuất" : "đã hủy VAT";
+let list = [];
+
+vatData.forEach(r => {
+
+    let cb = document.getElementById("cb_" + r.Chung_tu);
+    let checked = cb ? cb.checked : false;
+
+    list.push({
+        chung_tu: r.Chung_tu,
+        checked: checked
+    });
+});
 
 fetch("/api/xlthue/save-vat", {
-method:"POST",
-headers:{ "Content-Type":"application/json" },
-body: JSON.stringify({
-Makhach: kh,
-Chung_tu: ct,
-status: status
-})
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({
+        khachhang: kh,
+        data: list
+    })
 })
 .then(r => r.json())
-.then(() => loadData());
-}
+.then(() => {
+    alert("Đã lưu VAT!");
+    loadData();
+});
 
-function openCT(ct){
-alert("Cấp 3 chứng từ: " + ct);
 }
 
 loadData();
