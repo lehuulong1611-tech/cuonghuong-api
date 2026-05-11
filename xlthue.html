@@ -52,19 +52,29 @@ button {
 
 <!-- CHỌN NHANH -->
 <div class="box">
-    <label>Chọn nhanh</label>
-    <button onclick="setToday()">Hôm nay</button>
-</div>
 
-<!-- CHỌN KHOẢNG THỜI GIAN -->
-<div class="box">
-    <label>Từ ngày</label>
-    <input type="date" id="fromDate">
+    <label style="font-weight:600;">Từ ngày</label>
+    <label style="font-weight:600; margin-left:20px;">Đến ngày</label>
 
-    <label>Đến ngày</label>
-    <input type="date" id="toDate">
+    <div style="display:flex; gap:10px; margin-top:5px;">
 
-    <button onclick="filterRange()">Lọc dữ liệu</button>
+        <div style="flex:1;">
+            <input type="date" id="fromDate" style="width:100%; padding:8px;">
+        </div>
+
+        <div style="flex:1;">
+            <input type="date" id="toDate" style="width:100%; padding:8px;">
+        </div>
+
+        <div style="width:120px;">
+            <button onclick="filterRange()"
+                style="width:100%; padding:8px; background:#0d6efd; color:white; border:none; border-radius:6px;">
+                Lọc
+            </button>
+        </div>
+
+    </div>
+
 </div>
 
 <!-- KẾT QUẢ -->
