@@ -230,22 +230,24 @@ app.get("/api/xlthue/chungtu", async (req, res) => {
 //API xử lý chi tiết đơn thuế khách hàng
 app.post("/api/xlthue/save-vat", async (req, res) => {
     try {
+
+        console.log("BODY:", req.body);
+
         const { khachhang, data } = req.body;
 
         const pool = await sql.connect(config);
 
-        if (!khachhang || !data || !Array.isArray(data)) {
-            return res.status(400).json({ ok: false, message: "Invalid data" });
-        }
-
         for (const item of data) {
 
             const status = item.checked ? "đã xuất" : "đã hủy VAT";
-            const chung_tu = item.chung_tu;
 
-            const check = await pool.request()
+            console.log("SAVE:", khachhang, item.chung_tu, status);
+
+            const request = pool.request();
+
+            const check = await request
                 .input("Makhach", sql.NVarChar, khachhang)
-                .input("Chung_tu", sql.NVarChar, chung_tu)
+                .input("Chung_tu", sql.NVarChar, item.chung_tu)
                 .query(`
                     SELECT 1 FROM dbo.HoaDonThue_TrangThai
                     WHERE Makhach = @Makhach AND Chung_tu = @Chung_tu
@@ -253,10 +255,9 @@ app.post("/api/xlthue/save-vat", async (req, res) => {
 
             if (check.recordset.length > 0) {
 
-                // UPDATE
                 await pool.request()
                     .input("Makhach", sql.NVarChar, khachhang)
-                    .input("Chung_tu", sql.NVarChar, chung_tu)
+                    .input("Chung_tu", sql.NVarChar, item.chung_tu)
                     .input("status", sql.NVarChar, status)
                     .query(`
                         UPDATE dbo.HoaDonThue_TrangThai
@@ -267,10 +268,9 @@ app.post("/api/xlthue/save-vat", async (req, res) => {
 
             } else {
 
-                // INSERT
                 await pool.request()
                     .input("Makhach", sql.NVarChar, khachhang)
-                    .input("Chung_tu", sql.NVarChar, chung_tu)
+                    .input("Chung_tu", sql.NVarChar, item.chung_tu)
                     .input("status", sql.NVarChar, status)
                     .query(`
                         INSERT INTO dbo.HoaDonThue_TrangThai
@@ -281,14 +281,13 @@ app.post("/api/xlthue/save-vat", async (req, res) => {
             }
         }
 
-        res.json({ ok: true, message: "Saved VAT successfully" });
+        res.json({ ok: true });
 
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ ok: false, message: err.message });
+        console.error("SAVE VAT ERROR:", err);
+        res.status(500).json({ ok: false, error: err.message });
     }
 });
-
 
 
 //API xử lý thuế khách hàng
