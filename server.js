@@ -181,6 +181,52 @@ app.get("/api/doanhso/khachhang", async (req, res) => {
     }
 });
 
+//API xử lý thuế khách hàng
+app.get("/api/xlthue/khach", async (req, res) => {
+    try {
+        const { from, to } = req.query;
+
+        const pool = await sql.connect(config);
+
+        const result = await pool.request()
+        .input("from", sql.Date, from)
+        .input("to", sql.Date, to)
+        .query(`
+            SELECT 
+                a.KhachHang,
+                a.MST,
+                a.Ten_HoaDon,
+
+                COUNT(DISTINCT CASE 
+                    WHEN a.LoaiCT = 'HDBB' THEN a.Chung_tu 
+                END) AS SoDonBan,
+
+                COUNT(DISTINCT CASE 
+                    WHEN a.LoaiCT = 'HHTL' THEN a.Chung_tu 
+                END) AS SoDonTra,
+
+                SUM(CASE 
+                    WHEN a.LoaiCT = 'HDBB' THEN a.ThanhTien
+                    WHEN a.LoaiCT = 'HHTL' THEN -a.ThanhTien
+                    ELSE 0
+                END) AS TongTien
+
+            FROM vw_Chitietdonthue a
+            WHERE a.Ngay BETWEEN @from AND @to
+            GROUP BY 
+                a.KhachHang,
+                a.MST,
+                a.Ten_HoaDon
+            ORDER BY TongTien DESC
+        `);
+
+        res.json(result.recordset);
+
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
 
 //API Doanh số hàng hóa
 app.get("/api/doanhso/hanghoa", async (req, res) => {
