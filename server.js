@@ -335,7 +335,45 @@ app.get("/api/xlthue/khach", async (req, res) => {
         res.status(500).send(err.message);
     }
 });
+//API Chi tiết đơn hàng thuế
+app.get("/api/xlthue/chitiet", async (req, res) => {
 
+    try {
+
+        const { chungtu } = req.query;
+
+        const pool = await sql.connect(config);
+
+        const result = await pool.request()
+            .input("Chung_tu", sql.NVarChar, chungtu)
+            .query(`
+                SELECT
+                    Chung_tu,
+                    Ngay,
+                    KhachHang,
+                    TenHang,
+                    So_Luong,
+                    DVT,
+                    Dongia,
+                    ThanhTien
+                FROM vw_Chitietdonthue
+                WHERE Chung_tu = @Chung_tu
+                ORDER BY ID
+            `);
+
+        res.json(result.recordset);
+
+    } catch(err){
+
+        console.error(err);
+
+        res.status(500).json({
+            ok:false,
+            error: err.message
+        });
+    }
+
+});
 
 //API Doanh số hàng hóa
 app.get("/api/doanhso/hanghoa", async (req, res) => {
