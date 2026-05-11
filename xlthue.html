@@ -53,27 +53,33 @@ button {
 <!-- CHỌN NHANH -->
 <div class="box">
 
-    <label style="font-weight:600;">Từ ngày</label>
-    <label style="font-weight:600; margin-left:20px;">Đến ngày</label>
+    <div style="display:flex; gap:10px;">
 
-    <div style="display:flex; gap:10px; margin-top:5px;">
-
+        <!-- TỪ NGÀY -->
         <div style="flex:1;">
-            <input type="date" id="fromDate" style="width:100%; padding:8px;">
+            <label style="display:block; font-weight:600; margin-bottom:5px;">
+                Từ ngày
+            </label>
+            <input type="date" id="fromDate"
+                style="width:100%; padding:8px;">
         </div>
 
+        <!-- ĐẾN NGÀY -->
         <div style="flex:1;">
-            <input type="date" id="toDate" style="width:100%; padding:8px;">
-        </div>
-
-        <div style="width:120px;">
-            <button onclick="filterRange()"
-                style="width:100%; padding:8px; background:#0d6efd; color:white; border:none; border-radius:6px;">
-                Lọc
-            </button>
+            <label style="display:block; font-weight:600; margin-bottom:5px;">
+                Đến ngày
+            </label>
+            <input type="date" id="toDate"
+                style="width:100%; padding:8px;">
         </div>
 
     </div>
+
+    <button onclick="filterRange()"
+        style="margin-top:10px; width:100%; padding:10px;
+        background:#0d6efd; color:white; border:none; border-radius:6px;">
+        Lọc dữ liệu
+    </button>
 
 </div>
 
