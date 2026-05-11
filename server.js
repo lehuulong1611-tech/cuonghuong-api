@@ -181,6 +181,105 @@ app.get("/api/doanhso/khachhang", async (req, res) => {
     }
 });
 
+//API xử lý chi tiết thuế khách hàng
+app.get("/api/xlthue/chungtu", async (req, res) => {
+    try {
+        const { khachhang, from, to } = req.query;
+
+        const pool = await sql.connect(config);
+
+        const result = await pool.request()
+        .input("khachhang", sql.NVarChar, khachhang)
+        .input("from", sql.Date, from)
+        .input("to", sql.Date, to)
+        .query(`
+            SELECT 
+                c.KhachHang,
+                c.Chung_tu,
+                c.Ngay,
+                SUM(c.ThanhTien) AS ThanhTien,
+
+                t.Tinhtrang,
+                t.Ngaycapnhat
+
+            FROM vw_Chitietdonthue c
+            LEFT JOIN dbo.HoaDonThue_TrangThai t
+                ON c.Chung_tu = t.Chung_tu 
+                AND c.KhachHang = t.Makhach
+
+            WHERE c.KhachHang = @khachhang
+              AND c.Ngay BETWEEN @from AND @to
+
+            GROUP BY 
+                c.KhachHang,
+                c.Chung_tu,
+                c.Ngay,
+                t.Tinhtrang,
+                t.Ngaycapnhat
+
+            ORDER BY c.Ngay DESC
+        `);
+
+        res.json(result.recordset);
+
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+//API xử lý chi tiết đơn thuế khách hàng
+app.post("/api/xlthue/save-vat", async (req, res) => {
+    try {
+        const { Makhach, Chung_tu, status } = req.body;
+
+        const pool = await sql.connect(config);
+
+        const check = await pool.request()
+            .input("Makhach", sql.NVarChar, Makhach)
+            .input("Chung_tu", sql.NVarChar, Chung_tu)
+            .query(`
+                SELECT * FROM dbo.HoaDonThue_TrangThai
+                WHERE Makhach = @Makhach AND Chung_tu = @Chung_tu
+            `);
+
+        if (check.recordset.length > 0) {
+
+            // UPDATE
+            await pool.request()
+                .input("Makhach", sql.NVarChar, Makhach)
+                .input("Chung_tu", sql.NVarChar, Chung_tu)
+                .input("status", sql.NVarChar, status)
+                .query(`
+                    UPDATE dbo.HoaDonThue_TrangThai
+                    SET Tinhtrang = @status,
+                        Ngaycapnhat = GETDATE()
+                    WHERE Makhach = @Makhach AND Chung_tu = @Chung_tu
+                `);
+
+        } else {
+
+            // INSERT
+            await pool.request()
+                .input("Makhach", sql.NVarChar, Makhach)
+                .input("Chung_tu", sql.NVarChar, Chung_tu)
+                .input("status", sql.NVarChar, status)
+                .query(`
+                    INSERT INTO dbo.HoaDonThue_TrangThai
+                    (Manv, Makhach, Chung_tu, Ngaycapnhat, Tinhtrang)
+                    VALUES
+                    ('ketoan', @Makhach, @Chung_tu, GETDATE(), @status)
+                `);
+        }
+
+        res.json({ ok: true });
+
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+
+
 //API xử lý thuế khách hàng
 app.get("/api/xlthue/khach", async (req, res) => {
     try {
